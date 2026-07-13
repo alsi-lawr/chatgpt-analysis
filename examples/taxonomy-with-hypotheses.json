@@ -1,0 +1,30 @@
+{
+  "version": "example-hypotheses-1",
+  "dimensions": {
+    "domains": [
+      {"id": "technical", "keywords": ["code", "system", "database"], "regex": ["\\b(api|cli)\\b"]},
+      {"id": "creative", "keywords": ["story", "design", "draft"], "regex": []}
+    ],
+    "modes": [
+      {"id": "exploration", "keywords": ["brainstorm", "explore", "options"], "regex": []},
+      {"id": "execution", "keywords": ["implement", "produce", "final"], "regex": []}
+    ],
+    "signals": [
+      {"id": "verification", "keywords": ["verify", "test", "source"], "regex": []},
+      {"id": "correction", "keywords": ["incorrect", "fix", "not what I meant"], "regex": []}
+    ],
+    "sensitivities": [
+      {"id": "private_data", "keywords": ["password", "private key"], "regex": ["BEGIN [A-Z ]+PRIVATE KEY"]}
+    ]
+  },
+  "hypotheses": [
+    {
+      "id": "iterative_refinement",
+      "description": "The export contains repeated request-revise-check cycles.",
+      "keywords": ["revise", "try again", "verify"],
+      "regex": [],
+      "counter_keywords": ["first answer was sufficient"],
+      "counter_regex": []
+    }
+  ]
+}

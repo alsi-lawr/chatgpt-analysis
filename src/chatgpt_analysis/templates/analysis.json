@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "source": {
+    "path": "./export.zip",
+    "visible_roles": ["user", "assistant"]
+  },
+  "output": "./workspace",
+  "taxonomy": "./taxonomy.json",
+  "timezone": "UTC",
+  "periods": [],
+  "length_buckets": [
+    {"id": "short", "max_turns": 8},
+    {"id": "medium", "max_turns": 30},
+    {"id": "long", "max_turns": null}
+  ],
+  "segmentation": {
+    "maximum_turns": 20,
+    "maximum_characters": 24000,
+    "overlap_turns": 2
+  },
+  "routing": {
+    "enabled": false,
+    "always_model": false,
+    "model_if_turns": 30,
+    "model_if_unclassified": true,
+    "model_if_hypothesis_candidate": true,
+    "model_if_sensitive": true
+  },
+  "workers": {
+    "max_attempts": 3,
+    "require_independent_review": true
+  }
+}

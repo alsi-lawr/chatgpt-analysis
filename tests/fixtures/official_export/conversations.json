@@ -1,0 +1,35 @@
+[
+  {
+    "id": "synthetic-chat-1",
+    "title": "Synthetic checklist",
+    "create_time": 1735689600,
+    "update_time": 1735689900,
+    "current_node": "node-3",
+    "mapping": {
+      "root": {"id": "root", "parent": null, "children": ["node-1"], "message": null},
+      "node-1": {
+        "id": "node-1", "parent": "root", "children": ["node-2", "alternate"],
+        "message": {"id": "message-1", "author": {"role": "user"}, "create_time": 1735689600, "content": {"content_type": "text", "parts": ["Please create a short checklist and verify it."]}, "metadata": {}}
+      },
+      "node-2": {
+        "id": "node-2", "parent": "node-1", "children": ["node-3"],
+        "message": {"id": "message-2", "author": {"role": "assistant"}, "create_time": 1735689700, "content": {"content_type": "text", "parts": ["Here is a synthetic checklist."]}, "metadata": {"model_slug": "synthetic-model"}}
+      },
+      "node-3": {
+        "id": "node-3", "parent": "node-2", "children": [],
+        "message": {"id": "message-3", "author": {"role": "user"}, "create_time": 1735689800, "content": {"content_type": "multimodal_text", "parts": [{"text": "That works; cite a source next time."}]}, "metadata": {}}
+      },
+      "alternate": {
+        "id": "alternate", "parent": "node-1", "children": [],
+        "message": {"id": "message-alt", "author": {"role": "assistant"}, "create_time": 1735689650, "content": {"content_type": "text", "parts": ["This alternate branch must not be selected."]}, "metadata": {}}
+      }
+    }
+  },
+  {
+    "id": "synthetic-empty",
+    "title": "Synthetic empty chat",
+    "create_time": 1735776000,
+    "current_node": "empty-root",
+    "mapping": {"empty-root": {"id": "empty-root", "parent": null, "children": [], "message": null}}
+  }
+]

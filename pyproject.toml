@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chatgpt-export-analysis"
+version = "0.1.0"
+description = "Reproducible, evidence-linked analysis of user-supplied ChatGPT exports"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "alsi-lawr"}]
+keywords = [
+  "chatgpt",
+  "data analysis",
+  "digital humanities",
+  "local-first",
+  "reproducible research",
+]
+dependencies = []
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Scientific/Engineering :: Information Analysis",
+  "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/alsi-lawr/chatgpt-analysis"
+Documentation = "https://github.com/alsi-lawr/chatgpt-analysis#readme"
+Repository = "https://github.com/alsi-lawr/chatgpt-analysis.git"
+Issues = "https://github.com/alsi-lawr/chatgpt-analysis/issues"
+Changelog = "https://github.com/alsi-lawr/chatgpt-analysis/blob/master/CHANGELOG.md"
+
+[project.scripts]
+chatgpt-analysis = "chatgpt_analysis.cli:main"
+chatgpt-analysis-worker = "chatgpt_analysis.worker:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+chatgpt_analysis = ["py.typed", "templates/*.json", "templates/prompts/*.md", "templates/schemas/*.json"]

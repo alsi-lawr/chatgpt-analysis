@@ -1,0 +1,25 @@
+name: Feature request
+description: Propose a bounded change to public behaviour or research workflow
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and research outcome
+      description: Who encounters the problem, and what observable outcome should change?
+    validations:
+      required: true
+  - type: textarea
+    id: contract
+    attributes:
+      label: Proposed acceptance criteria
+      description: Include entry points, output or data changes, compatibility, privacy, failure behaviour, and verification.
+    validations:
+      required: true
+  - type: textarea
+    id: exclusions
+    attributes:
+      label: Explicitly out of scope
+    validations:
+      required: true

@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "source": {"path": "../my-chatgpt-export.zip", "visible_roles": ["user", "assistant"]},
+  "output": "../analysis-workspace",
+  "taxonomy": "./taxonomy-with-hypotheses.json",
+  "timezone": "Europe/London",
+  "periods": [
+    {"id": "before-change", "start": "2023-01-01", "end": "2024-12-31"},
+    {"id": "after-change", "start": "2025-01-01", "end": "2026-12-31"}
+  ],
+  "length_buckets": [
+    {"id": "short", "max_turns": 10},
+    {"id": "substantial", "max_turns": 50},
+    {"id": "extended", "max_turns": null}
+  ],
+  "segmentation": {"maximum_turns": 24, "maximum_characters": 30000, "overlap_turns": 3},
+  "routing": {
+    "enabled": true,
+    "always_model": false,
+    "model_if_turns": 24,
+    "model_if_unclassified": true,
+    "model_if_hypothesis_candidate": true,
+    "model_if_sensitive": true
+  },
+  "workers": {"max_attempts": 3, "require_independent_review": true}
+}

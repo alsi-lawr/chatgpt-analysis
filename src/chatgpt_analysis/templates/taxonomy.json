@@ -1,0 +1,21 @@
+{
+  "version": "example-1",
+  "dimensions": {
+    "domains": [
+      {"id": "software", "keywords": ["code", "program", "debug", "api"], "regex": []},
+      {"id": "writing", "keywords": ["draft", "rewrite", "essay", "edit"], "regex": []},
+      {"id": "research", "keywords": ["source", "evidence", "study", "compare"], "regex": []}
+    ],
+    "modes": [
+      {"id": "question_answer", "keywords": ["what is", "how does", "explain"], "regex": []},
+      {"id": "artifact_creation", "keywords": ["create", "write", "build"], "regex": []}
+    ],
+    "signals": [
+      {"id": "verification_request", "keywords": ["verify", "check your work", "cite a source"], "regex": []},
+      {"id": "revision_request", "keywords": ["revise", "try again", "change that"], "regex": []},
+      {"id": "explicit_acceptance", "keywords": ["that works", "approved", "looks good"], "regex": []}
+    ],
+    "sensitivities": []
+  },
+  "hypotheses": []
+}

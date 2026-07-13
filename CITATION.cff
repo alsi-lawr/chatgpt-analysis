@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software in research, please cite it using these metadata."
+title: "ChatGPT Export Analysis"
+type: software
+abstract: "A local-first command-line pipeline for reproducible, evidence-linked analysis of user-supplied ChatGPT exports."
+authors:
+  - name: "alsi-lawr"
+version: "0.1.0"
+date-released: "2026-07-13"
+repository-code: "https://github.com/alsi-lawr/chatgpt-analysis"
+url: "https://github.com/alsi-lawr/chatgpt-analysis"
+license: MIT
+keywords:
+  - ChatGPT
+  - data analysis
+  - digital humanities
+  - local-first
+  - reproducible research
+  - research software

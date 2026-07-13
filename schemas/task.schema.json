@@ -1,0 +1,72 @@
+{
+  "$id": "task.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "attempt": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "config_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "context_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "triage",
+        "signals"
+      ]
+    },
+    "output_schema_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "prompt_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "scope": {
+      "properties": {
+        "turn_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "scope_id",
+        "turn_ids"
+      ],
+      "type": "object"
+    },
+    "stage": {
+      "enum": [
+        "primary",
+        "review",
+        "adjudication"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "task_id",
+    "kind",
+    "stage",
+    "attempt",
+    "chat_id",
+    "source_hash",
+    "scope",
+    "parent_task_ids",
+    "payload",
+    "config_sha256",
+    "prompt_sha256",
+    "context_sha256",
+    "output_schema_sha256"
+  ],
+  "type": "object"
+}

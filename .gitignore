@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.coverage
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.venv/
+build/
+dist/
+.agent-workspace/
+workspace/
+analysis-workspace/
+worker-output/
+export.zip
+chatgpt-export*.zip
+*.sqlite

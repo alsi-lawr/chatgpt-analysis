@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "model-output.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "task_id", "kind", "stage", "attempt", "chat_id", "source_hash", "parent_task_ids", "worker", "labels", "hypotheses", "observations"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "task_id": {"type": "string"},
+    "kind": {"enum": ["triage", "signals"]},
+    "stage": {"enum": ["primary", "review", "adjudication"]},
+    "attempt": {"type": "integer", "minimum": 1},
+    "chat_id": {"type": "string"},
+    "source_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "parent_task_ids": {"type": "array", "items": {"type": "string"}},
+    "worker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "model", "reviewer_id"],
+      "properties": {"provider": {"type": "string"}, "model": {"type": "string"}, "reviewer_id": {"type": "string", "minLength": 1}}
+    },
+    "labels": {"type": "array", "items": {"$ref": "#/$defs/label"}},
+    "hypotheses": {"type": "array", "items": {"$ref": "#/$defs/hypothesis"}},
+    "observations": {"type": "array", "items": {"$ref": "#/$defs/observation"}}
+  },
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["turn_id", "basis"],
+      "properties": {"turn_id": {"type": "string"}, "basis": {"enum": ["observed", "self_report", "assistant_claim", "analyst_inference"]}}
+    },
+    "label": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dimension", "label", "confidence", "evidence"],
+      "properties": {
+        "dimension": {"type": "string"}, "label": {"type": "string"},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}}
+      }
+    },
+    "hypothesis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "rating", "summary", "evidence", "counterevidence"],
+      "properties": {
+        "id": {"type": "string"}, "rating": {"type": "integer", "minimum": 0, "maximum": 3}, "summary": {"type": "string"},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+        "counterevidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}}
+      }
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "confidence", "evidence"],
+      "properties": {
+        "summary": {"type": "string"}, "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}}
+      }
+    }
+  }
+}
