@@ -3,7 +3,7 @@
   "$id": "model-output.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "task_id", "kind", "stage", "attempt", "chat_id", "source_hash", "parent_task_ids", "worker", "labels", "hypotheses", "observations"],
+  "required": ["schema_version", "task_id", "kind", "stage", "attempt", "chat_id", "source_hash", "parent_task_ids", "worker", "relevance", "labels", "hypotheses", "observations"],
   "properties": {
     "schema_version": {"type": "string"},
     "task_id": {"type": "string"},
@@ -19,6 +19,7 @@
       "required": ["provider", "model", "reviewer_id"],
       "properties": {"provider": {"type": "string"}, "model": {"type": "string"}, "reviewer_id": {"type": "string", "minLength": 1}}
     },
+    "relevance": {"enum": ["empty", "frequency_only", "retain", null]},
     "labels": {"type": "array", "items": {"$ref": "#/$defs/label"}},
     "hypotheses": {"type": "array", "items": {"$ref": "#/$defs/hypothesis"}},
     "observations": {"type": "array", "items": {"$ref": "#/$defs/observation"}}

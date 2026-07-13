@@ -21,7 +21,7 @@ For mapping records, the adapter follows `current_node` through parent links. If
 
 `inventory` normalizes conversations and turns, assigns stable turn IDs, and hashes visible transcripts. `metrics` computes corpus-independent counts and distributions. `segments` creates bounded overlapping windows. `analyze-local` applies configured patterns for triage, event signals, sensitivities, and hypotheses, then emits model queues only when routing rules require them.
 
-`reduce` always begins with deterministic cards. Validated model cards are promoted only after adjudication or independent agreement when `require_independent_review` is true. Disagreements remain unresolved until adjudicated. `build-index` recreates SQLite from JSON/JSONL and enables FTS5 when the runtime SQLite supports it. Reports state computed coverage, configured coding counts, worker status, and limitations.
+`reduce` always begins with deterministic cards. When `require_independent_review` is true, validated primary/review pairs are consolidated by deterministic multi-label union. Domains, modes, sensitivities, signal/event labels, and individually valid evidence anchors are additive. Hypothesis scalar ratings become a range retaining both values. Primary-reviewer relevance remains the canonical scalar; secondary disagreement is audit/sensitivity metadata only. One reduced record with `macro_weight: 1` is emitted per chat. Existing accepted third-review outputs are recorded as audit-only and never contribute relevance, labels, evidence, observations, or hypotheses. `build-index` recreates SQLite from JSON/JSONL and enables FTS5 when the runtime SQLite supports it. Reports state computed coverage, configured coding counts, worker status, and limitations.
 
 ## Worker protocol
 
@@ -33,9 +33,11 @@ Each model result binds to `task_id` plus `attempt`, source hash, kind, stage, c
 
 1. primary triage/signal coding;
 2. independent review by a distinct `reviewer_id`;
-3. adjudication only when label or hypothesis-rating sets disagree;
-4. deterministic reducers choose adjudicated, then independently agreed outputs;
-5. unresolved or unreviewed cards are excluded when review is required.
+3. deterministic union of additive labels and valid evidence anchors, with hypothesis ratings retained as a sensitivity range;
+4. the primary reviewer's relevance/pruning tier remains canonical, with the secondary value and disagreement recorded in `review_audit` as sensitivity metadata;
+5. no third-review tasks are generated; every existing accepted third-review output remains audit-only regardless of coverage;
+6. missing independent reviews remain unresolved and are excluded when review is required;
+7. aggregation uses one macro-weighted unit per chat, regardless of its segment or label count.
 
 ## Assumptions
 

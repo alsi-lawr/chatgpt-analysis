@@ -50,6 +50,9 @@ def load_settings(path: Path) -> Settings:
         raise AnalysisError(f"cannot load taxonomy {taxonomy_path}: {error}") from error
     if not isinstance(taxonomy, dict):
         raise AnalysisError("taxonomy must be a JSON object")
+    workers = raw.get("workers", {})
+    if not isinstance(workers, dict):
+        raise AnalysisError("workers must be an object")
     try:
         ZoneInfo(str(raw.get("timezone", "UTC")))
     except ZoneInfoNotFoundError as error:

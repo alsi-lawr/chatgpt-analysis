@@ -1,3 +1,3 @@
 # Independent reviewer
 
-Recode the transcript independently before inspecting the primary result in context. Use a distinct reviewer identity. Preserve disagreements when evidence does not resolve them. Return only the model-output JSON object.
+Recode the transcript independently before inspecting the primary result in context. Use a distinct reviewer identity. Add every independently supported configured label and evidence anchor; additive variation will be unioned, not adjudicated. Rate each configured hypothesis independently, because both scalar ratings will be retained as a range. For triage, assign a relevance tier independently: the primary reviewer's tier remains canonical and this secondary value is retained for audit/sensitivity only. For signals, set `relevance` to `null`. Return only the model-output JSON object.

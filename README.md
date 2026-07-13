@@ -39,7 +39,7 @@ ChatGPT Export Analysis turns that dump into a reviewable workspace:
 - **Reproducible local analysis** computes inventories, distributions, periods, length buckets, segments, and configured pattern cards.
 - **Evidence-linked coding** requires labels, hypotheses, and observations to cite in-scope turn IDs.
 - **Explicit automation boundaries** keep model providers outside the core pipeline behind JSON task queues.
-- **Review before promotion** supports primary coding, independent review, and disagreement-only adjudication.
+- **Deterministic review consolidation** unions additive coding and evidence, retains hypothesis-rating sensitivity ranges, keeps primary-reviewer relevance canonical, and makes every third review audit-only.
 - **Acceptance checks** rehash source files and verify transcript digests, evidence references, report configuration, SQLite row counts, and database integrity.
 
 ### At a glance
@@ -83,7 +83,7 @@ my-analysis/
 ├── analysis.json
 ├── taxonomy.json
 ├── prompts/
-│   ├── adjudication.md
+│   ├── adjudication.md  # legacy third-review audit contract
 │   ├── reducer.md
 │   ├── review.md
 │   ├── signals.md
@@ -136,7 +136,7 @@ flowchart LR
 
     D -. "routing enabled" .-> G["JSON task queues"]
     G --> H["Your model or human worker"]
-    H --> I["Validate + review + adjudicate"]
+    H --> I["Validate + independent review"]
     I --> E
 ```
 
@@ -267,7 +267,7 @@ workspace/
 ├── metrics/          # inventory and deterministic distributions
 ├── segments/         # overlapping turn-reference windows
 ├── cards/            # deterministic triage and signal cards
-├── tasks/            # task catalog and primary/review/adjudication queues
+├── tasks/            # task catalog and primary/review queues
 ├── results/          # accepted worker cards and quarantined output
 ├── reduced/          # selected, evidence-preserving conversation cards
 ├── index/            # rebuildable SQLite database and optional FTS5
@@ -336,7 +336,7 @@ chatgpt-analysis ingest \
 `chatgpt-analysis-worker` resumes at the task-attempt level by skipping keys already present in its output JSONL. It launches the configured executable directly without a shell, so the command should be an executable plus arguments—not a shell pipeline. Worker diagnostics belong on stderr; stdout must contain only the result JSON object.
 
 <details>
-<summary><strong>Independent review and adjudication sequence</strong></summary>
+<summary><strong>Independent review sequence</strong></summary>
 
 Prepare review tasks from accepted primary results:
 
@@ -356,24 +356,6 @@ chatgpt-analysis ingest \
   --input worker-output/triage-review.jsonl
 ```
 
-Prepare adjudication tasks only for primary/review disagreements:
-
-```bash
-chatgpt-analysis prepare \
-  --config analysis.json \
-  --kind triage \
-  --stage adjudication
-
-chatgpt-analysis-worker \
-  --queue workspace/tasks/queues/triage-adjudication.jsonl \
-  --output worker-output/triage-adjudication.jsonl \
-  --command './my-model-worker --reviewer adjudicator-c'
-
-chatgpt-analysis ingest \
-  --config analysis.json \
-  --input worker-output/triage-adjudication.jsonl
-```
-
 Repeat the same lifecycle with `--kind signals` when signal tasks exist, then rebuild the downstream artifacts:
 
 ```bash
@@ -385,7 +367,9 @@ chatgpt-analysis accept --config analysis.json
 
 </details>
 
-With `require_independent_review: true`, reducers select adjudicated results first, then independently agreed primary/review pairs. Disagreements remain unresolved until adjudicated. The validator requires distinct `reviewer_id` values for parent and review/adjudication results; you remain responsible for making the underlying model or human review genuinely independent.
+With `require_independent_review: true`, reducers consolidate each primary/review pair deterministically. Domains, modes, sensitivities, `signals` event labels, and every individually valid evidence anchor are multi-label unions. Hypothesis ratings remain a `minimum`/`maximum` range with the observed values, rather than being averaged or assigned a winner. Reduced summaries contain exactly one `macro_weight: 1` record per chat, so segment count and coding density cannot give one chat extra weight.
+
+Relevance/pruning remains one canonical scalar (`empty`, `frequency_only`, or `retain`). The primary reviewer's value is canonical; the secondary value and any disagreement are retained in `review_audit` as sensitivity metadata. The streamlined pipeline does not prepare third-review tasks. Every existing accepted third-review output is listed as audit-only and cannot change relevance, labels, evidence, observations, or hypothesis ranges, regardless of how many third reviews exist. The validator requires distinct `reviewer_id` values for primary and secondary results; you remain responsible for making the underlying model or human review genuinely independent.
 
 See the [worker integration guide](docs/worker-example.md), [task schema](schemas/task.schema.json), and [model-output schema](schemas/model-output.schema.json). The schemas document the wire shapes; ingestion also performs task-binding and semantic checks that JSON Schema alone cannot express.
 

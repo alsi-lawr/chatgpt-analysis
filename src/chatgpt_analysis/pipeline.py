@@ -369,13 +369,18 @@ def _worker_instructions(kind: str, stage: str) -> str:
         "Use only configured taxonomy labels; put uncatalogued patterns in observations. "
         "Distinguish observed text, self-report, assistant claims, and analyst inference."
     )
+    relevance = (
+        " Set relevance to one of empty, frequency_only, or retain."
+        if kind == "triage"
+        else " Set relevance to null."
+    )
     if stage == "review":
-        return base + " Independently recode the evidence before comparing with the primary result."
+        return base + relevance + " Independently recode the evidence; additive labels and anchors will be unioned and hypothesis ratings retained as a range."
     if stage == "adjudication":
-        return base + " Resolve material primary/review disagreements; do not manufacture consensus."
+        return base + relevance + " This legacy third review is audit-only and cannot alter canonical relevance or the primary/review union."
     if kind == "signals":
-        return base + " Focus on evidence-linked events, hypotheses, counterevidence, and uncertainty."
-    return base + " Focus on relevance and configured classification dimensions."
+        return base + relevance + " Focus on evidence-linked events, hypotheses, counterevidence, and uncertainty."
+    return base + relevance + " Focus on relevance and configured classification dimensions."
 
 
 def _task(
@@ -539,76 +544,38 @@ def _accepted(settings: Settings, kind: str | None = None, stage: str | None = N
     return records
 
 
-def _result_keysets(result: dict[str, Any]) -> tuple[set[tuple[Any, ...]], set[tuple[Any, ...]]]:
-    labels = {
-        (
-            str(item.get("dimension")),
-            str(item.get("label")),
-            tuple(sorted(str(evidence.get("turn_id")) for evidence in item.get("evidence", []) if isinstance(evidence, dict))),
-        )
-        for item in result.get("labels", [])
-        if isinstance(item, dict)
-    }
-    hypotheses = {
-        (
-            str(item.get("id")),
-            int(item.get("rating", -1)),
-            tuple(sorted(str(evidence.get("turn_id")) for evidence in item.get("evidence", []) if isinstance(evidence, dict))),
-            tuple(sorted(str(evidence.get("turn_id")) for evidence in item.get("counterevidence", []) if isinstance(evidence, dict))),
-        )
-        for item in result.get("hypotheses", [])
-        if isinstance(item, dict) and isinstance(item.get("rating"), int)
-    }
-    return labels, hypotheses
+RELEVANCE_TIERS = ("empty", "frequency_only", "retain")
+
+
+def _chat_relevance(values: Iterable[str]) -> str:
+    ranks = {value: index for index, value in enumerate(RELEVANCE_TIERS)}
+    return max(values, key=lambda value: ranks[value])
 
 
 def prepare_worker_stage(settings: Settings, kind: str, stage: str) -> dict[str, Any]:
-    if kind not in {"triage", "signals"} or stage not in {"review", "adjudication"}:
-        raise AnalysisError("prepare stage requires kind triage|signals and stage review|adjudication")
+    if kind not in {"triage", "signals"} or stage != "review":
+        raise AnalysisError("prepare stage requires kind triage|signals and stage review")
     conversations = {item["chat_id"]: item for item in read_jsonl(layout(settings)["conversations"])}
     catalog = _catalog(settings)
     task_lookup = {(task["task_id"], int(task["attempt"])): task for task in catalog}
     tasks: list[dict[str, Any]] = []
-    if stage == "review":
-        for primary in _accepted(settings, kind, "primary"):
-            parent = task_lookup.get((primary["task_id"], int(primary["attempt"])))
-            if not parent:
-                continue
-            turns = parent["payload"]["turns"]
-            tasks.append(
-                _task(
-                    settings,
-                    kind,
-                    "review",
-                    conversations[primary["chat_id"]],
-                    turns,
-                    parent["scope"]["scope_id"],
-                    parents=[primary["task_id"]],
-                    context={"primary_result": primary, "review_requirement": "Use a reviewer_id different from the primary worker."},
-                )
+    for primary in _accepted(settings, kind, "primary"):
+        parent = task_lookup.get((primary["task_id"], int(primary["attempt"])))
+        if not parent:
+            continue
+        turns = parent["payload"]["turns"]
+        tasks.append(
+            _task(
+                settings,
+                kind,
+                "review",
+                conversations[primary["chat_id"]],
+                turns,
+                parent["scope"]["scope_id"],
+                parents=[primary["task_id"]],
+                context={"primary_result": primary, "review_requirement": "Use a reviewer_id different from the primary worker."},
             )
-    else:
-        reviews = _accepted(settings, kind, "review")
-        by_parent = {result["parent_task_ids"][0]: result for result in reviews if result.get("parent_task_ids")}
-        for primary in _accepted(settings, kind, "primary"):
-            review = by_parent.get(primary["task_id"])
-            if not review or _result_keysets(primary) == _result_keysets(review):
-                continue
-            parent = task_lookup.get((primary["task_id"], int(primary["attempt"])))
-            if not parent:
-                continue
-            tasks.append(
-                _task(
-                    settings,
-                    kind,
-                    "adjudication",
-                    conversations[primary["chat_id"]],
-                    parent["payload"]["turns"],
-                    parent["scope"]["scope_id"],
-                    parents=[primary["task_id"], review["task_id"]],
-                    context={"primary_result": primary, "review_result": review, "adjudication_requirement": "Resolve only material disagreements and preserve evidence links."},
-                )
-            )
+        )
     queue = _write_queue(settings, kind, stage, tasks)
     _append_provenance(settings, f"prepare-{kind}-{stage}", [queue])
     return {"kind": kind, "stage": stage, "task_count": len(tasks), "queue": str(queue)}
@@ -631,7 +598,7 @@ def _load_result_records(path: Path) -> list[dict[str, Any]]:
 
 def validate_model_result(settings: Settings, result: dict[str, Any], task: dict[str, Any]) -> list[str]:
     errors: list[str] = []
-    required = {"schema_version", "task_id", "kind", "stage", "attempt", "chat_id", "source_hash", "parent_task_ids", "worker", "labels", "hypotheses", "observations"}
+    required = {"schema_version", "task_id", "kind", "stage", "attempt", "chat_id", "source_hash", "parent_task_ids", "worker", "relevance", "labels", "hypotheses", "observations"}
     missing = sorted(required - result.keys())
     if missing:
         errors.append(f"missing keys: {missing}")
@@ -650,6 +617,11 @@ def validate_model_result(settings: Settings, result: dict[str, Any], task: dict
         errors.append("worker.reviewer_id must be a non-empty string")
     if not isinstance(worker, dict) or not isinstance(worker.get("model"), str):
         errors.append("worker.model must be a string")
+    relevance = result.get("relevance")
+    if task["kind"] == "triage" and relevance not in RELEVANCE_TIERS:
+        errors.append("triage relevance must be empty|frequency_only|retain")
+    if task["kind"] == "signals" and relevance is not None:
+        errors.append("signals relevance must be null")
     labels = result.get("labels")
     hypotheses = result.get("hypotheses")
     observations = result.get("observations")
@@ -784,12 +756,17 @@ def _combine_hypotheses(items: Iterable[dict[str, Any]]) -> list[dict[str, Any]]
             grouped[item["id"]].append(item)
     output: list[dict[str, Any]] = []
     for identifier, values in sorted(grouped.items()):
-        ratings = sorted(int(value.get("rating", 0)) for value in values)
-        rating = ratings[(len(ratings) - 1) // 2]
+        reviewer_ratings = {
+            int(value["rating"])
+            for value in values
+            if value.get("method", "model") == "model" and isinstance(value.get("rating"), int)
+        }
+        ratings = sorted(reviewer_ratings or {int(value["rating"]) for value in values if isinstance(value.get("rating"), int)})
         output.append(
             {
                 "id": identifier,
-                "rating": rating,
+                "rating_range": {"minimum": ratings[0], "maximum": ratings[-1]},
+                "rating_values": ratings,
                 "evidence": _merge_evidence(evidence for value in values for evidence in value.get("evidence", [])),
                 "counterevidence": _merge_evidence(evidence for value in values for evidence in value.get("counterevidence", [])),
                 "methods": sorted({str(value.get("method", "model")) for value in values}),
@@ -801,7 +778,6 @@ def _combine_hypotheses(items: Iterable[dict[str, Any]]) -> list[dict[str, Any]]
 def reduce_results(settings: Settings) -> dict[str, Any]:
     paths = layout(settings)
     deterministic_triage = {item["chat_id"]: item for item in read_jsonl(paths["triage"])}
-    deterministic_signals = {item["chat_id"]: item for item in read_jsonl(paths["signals"])}
     all_results = _accepted(settings)
     by_kind_stage: dict[tuple[str, str], list[dict[str, Any]]] = collections.defaultdict(list)
     for result in all_results:
@@ -809,26 +785,29 @@ def reduce_results(settings: Settings) -> dict[str, Any]:
     selected: list[dict[str, Any]] = []
     unresolved = 0
     require_review = bool(settings.raw.get("workers", {}).get("require_independent_review", True))
+    all_adjudications = by_kind_stage[("triage", "adjudication")] + by_kind_stage[("signals", "adjudication")]
     for kind in ("triage", "signals"):
         primaries = by_kind_stage[(kind, "primary")]
         reviews = by_kind_stage[(kind, "review")]
-        adjudications = by_kind_stage[(kind, "adjudication")]
         review_by_parent = {item["parent_task_ids"][0]: item for item in reviews if item.get("parent_task_ids")}
         for primary in primaries:
             review = review_by_parent.get(primary["task_id"])
-            adjudication = next((item for item in adjudications if primary["task_id"] in item.get("parent_task_ids", [])), None)
-            if adjudication:
-                chosen = dict(adjudication)
-                chosen["selection_status"] = "adjudicated"
-                selected.append(chosen)
-            elif review and _result_keysets(primary) == _result_keysets(review):
+            if review:
                 chosen = dict(review)
-                chosen["labels"] = _combine_labels(primary.get("labels", []) + review.get("labels", []))
-                chosen["hypotheses"] = _combine_hypotheses(primary.get("hypotheses", []) + review.get("hypotheses", []))
-                chosen["selection_status"] = "independently_agreed"
+                chosen["labels"] = primary.get("labels", []) + review.get("labels", [])
+                chosen["hypotheses"] = primary.get("hypotheses", []) + review.get("hypotheses", [])
+                chosen["observations"] = primary.get("observations", []) + review.get("observations", [])
+                chosen["selection_status"] = "independent_union"
+                if kind == "triage":
+                    chosen["relevance"] = primary["relevance"]
+                    chosen["relevance_audit"] = {
+                        "primary_task_id": primary["task_id"],
+                        "primary_value": primary["relevance"],
+                        "secondary_task_id": review["task_id"],
+                        "secondary_value": review["relevance"],
+                        "disagreement": primary["relevance"] != review["relevance"],
+                    }
                 selected.append(chosen)
-            elif review:
-                unresolved += 1
             elif not require_review:
                 chosen = dict(primary)
                 chosen["selection_status"] = "unreviewed"
@@ -845,17 +824,29 @@ def reduce_results(settings: Settings) -> dict[str, Any]:
         labels = _combine_labels(base.get("labels", []) + [item for result in model for item in result.get("labels", [])])
         hypotheses = _combine_hypotheses(base.get("hypotheses", []) + [item for result in model for item in result.get("hypotheses", [])])
         observations = [item for result in model for item in result.get("observations", [])]
+        triage_model = [result for result in model if result["kind"] == "triage"]
+        pair_audits = [result["relevance_audit"] for result in triage_model if "relevance_audit" in result]
+        relevance = _chat_relevance(str(result["relevance"]) for result in triage_model) if triage_model else base["relevance"]
         records.append(
             {
                 "schema_version": settings.raw["schema_version"],
                 "chat_id": chat_id,
                 "source_hash": base["source_hash"],
-                "relevance": base["relevance"],
+                "macro_weight": 1,
+                "relevance": relevance,
                 "labels": labels,
                 "hypotheses": hypotheses,
-                "events": deterministic_signals[chat_id].get("events", []),
+                "events": [item for item in labels if item["dimension"] == "signals"],
                 "observations": observations,
                 "model_selection_statuses": sorted({result["selection_status"] for result in model}),
+                "review_audit": {
+                    "relevance_pairs": pair_audits,
+                    "third_reviews_audit_only": sorted(
+                        result["task_id"]
+                        for result in all_adjudications
+                        if result["chat_id"] == chat_id
+                    ),
+                },
             }
         )
     write_jsonl(paths["reduced"], records)
@@ -866,17 +857,20 @@ def reduce_results(settings: Settings) -> dict[str, Any]:
         hypothesis_summary.append(
             {
                 "id": definition["id"],
-                "conversation_count": len(cards),
-                "rating_counts": dict(sorted(collections.Counter(str(item["rating"]) for item in cards).items())),
+                "conversation_count": sum(record["macro_weight"] for record in records if any(item["id"] == definition.get("id") for item in record["hypotheses"])),
+                "rating_range_counts": dict(sorted(collections.Counter(f"{item['rating_range']['minimum']}-{item['rating_range']['maximum']}" for item in cards).items())),
                 "evidence_count": sum(len(item["evidence"]) for item in cards),
                 "counterevidence_count": sum(len(item["counterevidence"]) for item in cards),
                 "evidence_links": sorted({f"{record['chat_id']}#{evidence['turn_id']}" for record in records for item in record["hypotheses"] if item["id"] == definition.get("id") for evidence in item["evidence"]}),
                 "counterevidence_links": sorted({f"{record['chat_id']}#{evidence['turn_id']}" for record in records for item in record["hypotheses"] if item["id"] == definition.get("id") for evidence in item["counterevidence"]}),
             }
         )
-    write_json(paths["hypotheses"], {"config_sha256": settings.digest, "hypotheses": hypothesis_summary, "unresolved_model_pairs": unresolved})
+    review_audit = {
+        "third_reviews_audit_only": len(all_adjudications),
+    }
+    write_json(paths["hypotheses"], {"config_sha256": settings.digest, "hypotheses": hypothesis_summary, "unresolved_model_pairs": unresolved, "review_audit": review_audit})
     _append_provenance(settings, "reduce", [paths["reduced"], paths["hypotheses"]])
-    return {"conversation_count": len(records), "selected_model_cards": len(selected), "unresolved_model_pairs": unresolved}
+    return {"conversation_count": len(records), "selected_model_cards": len(selected), "unresolved_model_pairs": unresolved, "review_audit": review_audit}
 
 
 def build_index(settings: Settings) -> dict[str, Any]:
@@ -959,7 +953,10 @@ def generate_report(settings: Settings) -> dict[str, Any]:
     inventory_value = read_json(paths["inventory"])
     reduced = list(read_jsonl(paths["reduced"]))
     hypotheses = read_json(paths["hypotheses"])
-    label_counts = collections.Counter((item["dimension"], item["label"]) for card in reduced for item in card["labels"])
+    label_counts: collections.Counter[tuple[str, str]] = collections.Counter()
+    for card in reduced:
+        for item in card["labels"]:
+            label_counts[(item["dimension"], item["label"])] += int(card["macro_weight"])
     task_status = _task_status(settings)
     summary = {
         "schema_version": settings.raw["schema_version"],
@@ -976,6 +973,7 @@ def generate_report(settings: Settings) -> dict[str, Any]:
             for (dimension, label), count in sorted(label_counts.items())
         ],
         "hypotheses": hypotheses["hypotheses"],
+        "review_audit": hypotheses["review_audit"],
         "task_status": task_status,
         "limitations": [
             "Deterministic labels are configured pattern matches, not semantic ground truth.",
@@ -1014,7 +1012,8 @@ def generate_report(settings: Settings) -> dict[str, Any]:
         for item in hypotheses["hypotheses"]:
             support = ", ".join(f"`{link}`" for link in item["evidence_links"][:5]) or "none"
             counter = ", ".join(f"`{link}`" for link in item["counterevidence_links"][:5]) or "none"
-            lines.append(f"- `{item['id']}`: {item['conversation_count']} coded conversation(s), {item['evidence_count']} support link(s), {item['counterevidence_count']} counterevidence link(s); support {support}; counterevidence {counter}")
+            ranges = ", ".join(f"`{value}` × {count}" for value, count in item["rating_range_counts"].items()) or "none"
+            lines.append(f"- `{item['id']}`: {item['conversation_count']} coded conversation(s), rating ranges {ranges}, {item['evidence_count']} support link(s), {item['counterevidence_count']} counterevidence link(s); support {support}; counterevidence {counter}")
     else:
         lines.append("No hypotheses are configured.")
     lines.extend(
@@ -1026,6 +1025,7 @@ def generate_report(settings: Settings) -> dict[str, Any]:
             f"- Accepted outputs: {task_status['accepted']}",
             f"- Pending latest attempts: {task_status['pending']}",
             f"- Quarantined outputs: {task_status['quarantined']}",
+            f"- Third reviews retained as audit-only: {hypotheses['review_audit']['third_reviews_audit_only']}",
             "",
             "## Interpretation limits",
             "",

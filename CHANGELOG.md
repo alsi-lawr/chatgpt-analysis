@@ -7,6 +7,7 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Changed
 
 - Updated immutable GitHub Actions pins to the current official releases.
+- Replaced mismatch-wide adjudication with deterministic multi-label/evidence union, macro-weighted chat records, hypothesis-rating ranges, primary-reviewer canonical relevance, and permanently audit-only legacy third reviews.
 
 ## [0.1.0] - 2026-07-13
 

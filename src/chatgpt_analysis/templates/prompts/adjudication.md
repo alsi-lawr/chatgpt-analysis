@@ -1,3 +1,3 @@
-# Adjudicator
+# Legacy third-review audit
 
-Resolve only material differences between primary and review outputs against the cited transcript. Do not average away disagreement or add unsupported claims. Use a reviewer identity distinct from both parent workers. Return only the model-output JSON object.
+The streamlined pipeline does not generate third-review tasks. Existing accepted third-review outputs are audit-only: they cannot alter canonical relevance, additive labels, evidence anchors, observations, or hypothesis rating ranges. This prompt remains only to document the legacy wire stage.
