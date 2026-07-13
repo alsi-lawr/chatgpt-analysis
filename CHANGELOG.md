@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed
+
+- Updated immutable GitHub Actions pins to the current official releases.
+
 ## [0.1.0] - 2026-07-13
 
 ### Added
