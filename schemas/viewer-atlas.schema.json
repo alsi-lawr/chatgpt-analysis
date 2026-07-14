@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alsi-lawr/chatgpt-analysis/schemas/viewer-atlas.schema.json",
+  "title": "Analysis viewer atlas",
+  "description": "Versioned static-data contract consumed by the analysis viewer. The canonical runtime validation is implemented by the viewer parser.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "metadata",
+    "coverage",
+    "reports",
+    "topics",
+    "threads",
+    "chats",
+    "occurrences",
+    "aggregates",
+    "rolling",
+    "architecture_episodes",
+    "claims",
+    "limits"
+  ],
+  "properties": {
+    "schema_version": { "const": "2.0.0" },
+    "metadata": { "$ref": "#/$defs/metadata" },
+    "coverage": { "$ref": "#/$defs/coverage" },
+    "reports": { "type": "array", "items": { "$ref": "#/$defs/report" } },
+    "topics": { "type": "array", "items": { "$ref": "#/$defs/topic" } },
+    "threads": { "type": "array", "items": { "$ref": "#/$defs/thread" } },
+    "chats": { "type": "array", "items": { "$ref": "#/$defs/chat" } },
+    "occurrences": { "type": "array", "items": { "$ref": "#/$defs/occurrence" } },
+    "aggregates": { "type": "array", "items": { "type": "object" } },
+    "rolling": { "type": "array", "items": { "type": "object" } },
+    "architecture_episodes": { "type": "array", "items": { "type": "object" } },
+    "claims": { "type": "array", "items": { "type": "object" } },
+    "limits": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+  },
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "required": ["title", "description", "generated_from", "privacy_notice"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "generated_from": { "type": "string", "minLength": 1 },
+        "privacy_notice": { "type": "string", "minLength": 1 }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "required": ["chat_count", "claim_count", "topic_occurrence_count"],
+      "properties": {
+        "chat_count": { "type": "integer", "minimum": 0 },
+        "claim_count": { "type": "integer", "minimum": 0 },
+        "topic_occurrence_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "report": {
+      "type": "object",
+      "required": ["report_id", "title", "description", "profiles", "markdown_path"],
+      "properties": {
+        "report_id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "profiles": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "markdown_path": { "type": "string", "minLength": 1 }
+      }
+    },
+    "topic": {
+      "type": "object",
+      "required": ["topic_id", "label", "description", "parent_topic_id"],
+      "properties": {
+        "topic_id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "parent_topic_id": { "type": ["string", "null"] }
+      }
+    },
+    "thread": {
+      "type": "object",
+      "required": ["thread_id", "label", "description", "aliases"],
+      "properties": {
+        "thread_id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "aliases": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "chat": {
+      "type": "object",
+      "required": ["chat_id", "title", "date", "period", "tier", "turn_count", "domains", "modes", "topic_ids", "thread_ids"],
+      "properties": {
+        "chat_id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "date": { "type": "string", "format": "date" },
+        "period": { "type": "string", "minLength": 1 },
+        "tier": { "type": "string", "minLength": 1 },
+        "turn_count": { "type": "integer", "minimum": 1 },
+        "domains": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "modes": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "topic_ids": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "thread_ids": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "occurrence": {
+      "type": "object",
+      "required": ["occurrence_id", "chat_id", "topic_id", "thread_ids", "start_turn", "end_turn", "centrality", "stance", "provenance", "confidence", "source_kind", "sensitivity_state", "summary", "excerpts"],
+      "properties": {
+        "occurrence_id": { "type": "string", "minLength": 1 },
+        "chat_id": { "type": "string", "minLength": 1 },
+        "topic_id": { "type": "string", "minLength": 1 },
+        "thread_ids": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "start_turn": { "type": "integer", "minimum": 1 },
+        "end_turn": { "type": "integer", "minimum": 1 },
+        "centrality": { "type": "string", "minLength": 1 },
+        "stance": { "type": "string", "minLength": 1 },
+        "provenance": { "type": "string", "minLength": 1 },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "source_kind": { "type": "string", "minLength": 1 },
+        "sensitivity_state": { "const": "permitted" },
+        "summary": { "type": "string" },
+        "excerpts": { "type": "array", "items": { "$ref": "#/$defs/excerpt" } }
+      }
+    },
+    "excerpt": {
+      "type": "object",
+      "required": ["turn_number", "text", "content_sha256"],
+      "properties": {
+        "turn_number": { "type": "integer", "minimum": 1 },
+        "text": { "type": "string", "minLength": 1 },
+        "content_sha256": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

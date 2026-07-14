@@ -24,6 +24,7 @@ from .pipeline import (
     reduce_results,
     run_all,
 )
+from .viewer import generate_viewer_bundle
 
 
 def _emit(value: Any) -> None:
@@ -78,6 +79,7 @@ def parser() -> argparse.ArgumentParser:
         ("reduce", reduce_results, "reduce deterministic and validated model cards"),
         ("build-index", build_index, "rebuild SQLite and FTS from derived artifacts"),
         ("report", generate_report, "generate JSON and Markdown reports"),
+        ("viewer", generate_viewer_bundle, "generate a build-ready static viewer bundle from completed artifacts"),
         ("accept", acceptance_check, "run provenance and consistency acceptance checks"),
         ("run", run_all, "run the complete deterministic local pipeline"),
     ):

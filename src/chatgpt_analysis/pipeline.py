@@ -1036,11 +1036,16 @@ def generate_report(settings: Settings) -> dict[str, Any]:
     from .util import atomic_write_text
 
     atomic_write_text(paths["report_md"], "\n".join(lines))
-    _append_provenance(settings, "report", [paths["report_json"], paths["report_md"]])
-    return summary
+    from .viewer import generate_viewer_bundle
+
+    viewer = generate_viewer_bundle(settings)
+    _append_provenance(settings, "report", [paths["report_json"], paths["report_md"], Path(viewer["atlas"]), Path(viewer["report"])])
+    return {**summary, "viewer": viewer}
 
 
 def acceptance_check(settings: Settings) -> dict[str, Any]:
+    from .viewer import viewer_schema_version
+
     paths = layout(settings)
     errors: list[str] = []
     warnings: list[str] = []
@@ -1104,6 +1109,12 @@ def acceptance_check(settings: Settings) -> dict[str, Any]:
     report = read_json(paths["report_json"])
     if report.get("config_sha256") != settings.digest:
         errors.append("report was built with a different configuration")
+    viewer_atlas = settings.output / "viewer" / "public" / "data" / "atlas.json"
+    viewer_report = settings.output / "viewer" / "public" / "reports" / "summary.md"
+    if not viewer_atlas.is_file() or not viewer_report.is_file():
+        errors.append("viewer bundle is incomplete")
+    elif read_json(viewer_atlas).get("schema_version") != viewer_schema_version():
+        errors.append("viewer bundle has an unsupported schema version")
     status = _task_status(settings)
     if status["pending"]:
         warnings.append(f"{status['pending']} latest worker task attempt(s) remain pending")

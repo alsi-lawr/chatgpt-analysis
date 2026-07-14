@@ -52,4 +52,4 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-chatgpt_analysis = ["py.typed", "templates/*.json", "templates/prompts/*.md", "templates/schemas/*.json"]
+chatgpt_analysis = ["py.typed", "templates/*.json", "templates/prompts/*.md", "templates/schemas/*.json", "viewer/**"]

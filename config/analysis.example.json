@@ -5,6 +5,11 @@
     "visible_roles": ["user", "assistant"]
   },
   "output": "./workspace",
+  "viewer": {
+    "title": "ChatGPT export analysis",
+    "description": "Evidence-linked static summary of a user-supplied ChatGPT export.",
+    "privacy_notice": "Conversation titles and transcript excerpts are intentionally omitted from this generated viewer bundle."
+  },
   "taxonomy": "./taxonomy.json",
   "timezone": "UTC",
   "periods": [],

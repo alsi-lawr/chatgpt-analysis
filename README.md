@@ -272,10 +272,27 @@ workspace/
 ├── reduced/          # selected, evidence-preserving conversation cards
 ├── index/            # rebuildable SQLite database and optional FTS5
 ├── reports/          # Markdown and machine-readable summaries
+├── viewer/           # generated build-ready static viewer source and private data bundle
 └── audits/           # acceptance result
 ```
 
 Deterministic artifacts and the SQLite index are rebuildable from the source and configuration. Preserve external worker results if you need to reproduce model- or human-coded output without running those workers again. Use a fresh or emptied output directory when you need a clean rebuild that excludes old worker artifacts. Configuration validation rejects an output directory that is the source directory or nested beneath it.
+
+## Static viewer
+
+Every `report` run also creates `workspace/viewer/`: a fresh copy of the packaged React/Tailwind viewer plus `public/data/atlas.json`, the generated Markdown report bundle, and any local assets referenced by those reports. The viewer uses the versioned [`viewer-atlas.schema.json`](schemas/viewer-atlas.schema.json) contract and does not fabricate optional score, rolling, event, claim, thread, title, or transcript data when the generic pipeline did not produce it.
+
+Build it from the generated workspace, rather than from the packaged source:
+
+```bash
+cd workspace/viewer
+npm ci
+npm run build
+```
+
+This writes a relocatable `workspace/site/` bundle with relative data, report, and asset URLs. Browser history and report-internal links remain in-app query routes. The generated viewer is private data: protect `workspace/` like the rest of the derived analysis artifacts.
+
+The canonical viewer source is `src/chatgpt_analysis/viewer/`. `scripts/sync_viewer.py` provides the explicit one-way source replacement used by the existing `chatgpt-export` development-atlas mirror; it preserves that mirror's generated `public/` data and local `node_modules/` directory.
 
 ## Querying SQLite
 

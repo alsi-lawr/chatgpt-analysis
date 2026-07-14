@@ -28,7 +28,7 @@ class DistributionTests(unittest.TestCase):
             ("config/analysis.example.json", "templates/analysis.json"),
             ("config/taxonomy.example.json", "templates/taxonomy.json"),
             *((f"prompts/{name}", f"templates/prompts/{name}") for name in ("adjudication.md", "reducer.md", "review.md", "signals.md", "triage.md")),
-            *((f"schemas/{name}", f"templates/schemas/{name}") for name in ("model-output.schema.json", "task.schema.json")),
+            *((f"schemas/{name}", f"templates/schemas/{name}") for name in ("model-output.schema.json", "task.schema.json", "viewer-atlas.schema.json")),
         ]
         package_root = resources.files("chatgpt_analysis")
         for reference, packaged in pairs:

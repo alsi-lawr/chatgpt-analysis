@@ -11,3 +11,4 @@ recursive-include prompts *.md
 recursive-include schemas *.json
 recursive-include scripts *.py
 recursive-include tests *.json *.py
+recursive-include src/chatgpt_analysis/viewer *
