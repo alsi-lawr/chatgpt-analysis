@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/chatgpt-analysis.svg" width="128" height="128" alt="ChatGPT Export Analysis logo">
+
 <h1>ChatGPT Export Analysis</h1>
 
 <p><strong>Turn your ChatGPT export into a reproducible, queryable, evidence-linked corpus.</strong></p>
@@ -13,7 +15,6 @@
   <a href="https://github.com/alsi-lawr/chatgpt-analysis/actions/workflows/ci.yml"><img alt="CI status" src="https://github.com/alsi-lawr/chatgpt-analysis/actions/workflows/ci.yml/badge.svg?branch=master"></a>
   <a href="pyproject.toml"><img alt="Python 3.11+" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white"></a>
   <a href="pyproject.toml"><img alt="Zero runtime dependencies" src="https://img.shields.io/badge/runtime_dependencies-0-2ea44f"></a>
-  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-blue"></a>
 </p>
 
 <p>

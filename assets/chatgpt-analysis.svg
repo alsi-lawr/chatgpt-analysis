@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title description">
+  <title id="title">ChatGPT Export Analysis</title>
+  <desc id="description">Linked conversation evidence arranged as a measurable analysis corpus.</desc>
+  <defs>
+    <linearGradient id="analysis" x1="46" y1="44" x2="211" y2="216" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22c55e"/>
+      <stop offset="1" stop-color="#38bdf8"/>
+    </linearGradient>
+  </defs>
+  <rect x="18" y="18" width="220" height="220" rx="48" fill="#111827"/>
+  <path d="M52 54h108c17 0 30 13 30 30v48c0 17-13 30-30 30h-44l-34 28v-28H52c-17 0-30-13-30-30V84c0-17 13-30 30-30Z" fill="#172334" stroke="url(#analysis)" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M60 91h86M60 115h60M60 139h39" fill="none" stroke="#dbeafe" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="171" cy="165" r="34" fill="#111827" stroke="#38bdf8" stroke-width="10"/>
+  <path d="M195 189l27 27" stroke="#38bdf8" stroke-width="12" stroke-linecap="round"/>
+  <path d="M153 176v-17M170 176v-31M187 176v-43" stroke="#22c55e" stroke-width="8" stroke-linecap="round"/>
+</svg>

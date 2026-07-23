@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title description">
+  <title id="title">ChatGPT Export Analysis</title>
+  <desc id="description">The conversation-analysis mark and wordmark on a dark social card.</desc>
+  <defs>
+    <clipPath id="card-clip">
+      <rect x="10" y="10" width="1260" height="620" rx="56"/>
+    </clipPath>
+  </defs>
+  <rect x="10" y="10" width="1260" height="620" rx="56" fill="#0c1722" fill-opacity="0.97" stroke="#22c55e" stroke-width="4" stroke-opacity="0.7"/>
+  <g clip-path="url(#card-clip)">
+    <circle cx="1160" cy="90" r="220" fill="#22c55e" opacity="0.055"/>
+    <circle cx="1110" cy="585" r="285" fill="#22c55e" opacity="0.035"/>
+  </g>
+  <path d="M480 408H1136" stroke="#22c55e" stroke-width="4" opacity="0.65"/>
+  <g transform="translate(96 160) scale(1.25) translate(-0 -0)" aria-hidden="true">
+<defs>
+    <linearGradient id="analysis" x1="46" y1="44" x2="211" y2="216" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22c55e"/>
+      <stop offset="1" stop-color="#38bdf8"/>
+    </linearGradient>
+  </defs>
+  <rect x="18" y="18" width="220" height="220" rx="48" fill="#111827"/>
+  <path d="M52 54h108c17 0 30 13 30 30v48c0 17-13 30-30 30h-44l-34 28v-28H52c-17 0-30-13-30-30V84c0-17 13-30 30-30Z" fill="#172334" stroke="url(#analysis)" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M60 91h86M60 115h60M60 139h39" fill="none" stroke="#dbeafe" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="171" cy="165" r="34" fill="#111827" stroke="#38bdf8" stroke-width="10"/>
+  <path d="M195 189l27 27" stroke="#38bdf8" stroke-width="12" stroke-linecap="round"/>
+  <path d="M153 176v-17M170 176v-31M187 176v-43" stroke="#22c55e" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <text x="480" y="325" fill="#f8fafc" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="72" font-weight="750" letter-spacing="-4">
+    <tspan>ChatGPT Export</tspan><tspan fill="#22c55e"> Analysis</tspan>
+  </text>
+  <text x="484" y="379" fill="#cbd5e1" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="19" font-weight="650" letter-spacing="2.2">
+    A LOCAL-FIRST, EVIDENCE-LINKED ANALYSIS CORPUS
+  </text>
+</svg>
